@@ -13,10 +13,22 @@ provider "azurerm" {
   features {}
 }
 
+locals {
+  subscription_id = "/subscriptions/ff45ede4-ddf8-4818-9ab0-486b2d42d71e"
+}
+
+#################################################
+# ADIRYX ROOT MANAGEMENT GROUP
+#################################################
+
 resource "azurerm_management_group" "adiryx" {
   name         = "adiryx"
   display_name = "Adiryx"
 }
+
+#################################################
+# PLATFORM MANAGEMENT GROUPS
+#################################################
 
 resource "azurerm_management_group" "platform" {
   name                       = "adiryx-platform"
@@ -42,6 +54,10 @@ resource "azurerm_management_group" "management" {
   parent_management_group_id = azurerm_management_group.platform.id
 }
 
+#################################################
+# LANDING ZONES MANAGEMENT GROUPS
+#################################################
+
 resource "azurerm_management_group" "landingzones" {
   name                       = "adiryx-landingzones"
   display_name               = "Adiryx Landing Zones"
@@ -63,8 +79,12 @@ resource "azurerm_management_group" "nonprod" {
 resource "azurerm_management_group" "sandbox" {
   name                       = "adiryx-sandbox"
   display_name               = "Adiryx Sandbox"
-  parent_management_group_id = azurerm_management_group.adiryx.id
+  parent_management_group_id = azurerm_management_group.landingzones.id
 }
+
+#################################################
+# DECOMMISSIONED MANAGEMENT GROUP
+#################################################
 
 resource "azurerm_management_group" "decommissioned" {
   name                       = "adiryx-decommissioned"
@@ -72,7 +92,11 @@ resource "azurerm_management_group" "decommissioned" {
   parent_management_group_id = azurerm_management_group.adiryx.id
 }
 
+#################################################
+# SUBSCRIPTION ASSOCIATION
+#################################################
+
 resource "azurerm_management_group_subscription_association" "adiryx_soc_platform" {
-  management_group_id = azurerm_management_group.management.id
-  subscription_id     = "/subscriptions/ff45ede4-ddf8-4818-9ab0-486b2d42d71e"
+  management_group_id = azurerm_management_group.nonprod.id
+  subscription_id     = local.subscription_id
 }
