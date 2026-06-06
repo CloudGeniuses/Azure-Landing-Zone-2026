@@ -13,18 +13,10 @@ provider "azurerm" {
   features {}
 }
 
-#################################################
-# ADIRYX ROOT MANAGEMENT GROUP
-#################################################
-
 resource "azurerm_management_group" "adiryx" {
   name         = "adiryx"
   display_name = "Adiryx"
 }
-
-#################################################
-# PLATFORM
-#################################################
 
 resource "azurerm_management_group" "platform" {
   name                       = "adiryx-platform"
@@ -50,10 +42,6 @@ resource "azurerm_management_group" "management" {
   parent_management_group_id = azurerm_management_group.platform.id
 }
 
-#################################################
-# LANDING ZONES
-#################################################
-
 resource "azurerm_management_group" "landingzones" {
   name                       = "adiryx-landingzones"
   display_name               = "Adiryx Landing Zones"
@@ -78,11 +66,13 @@ resource "azurerm_management_group" "sandbox" {
   parent_management_group_id = azurerm_management_group.adiryx.id
 }
 
-#################################################
-# SUBSCRIPTION ASSOCIATION
-#################################################
+resource "azurerm_management_group" "decommissioned" {
+  name                       = "adiryx-decommissioned"
+  display_name               = "Adiryx Decommissioned"
+  parent_management_group_id = azurerm_management_group.adiryx.id
+}
 
 resource "azurerm_management_group_subscription_association" "adiryx_soc_platform" {
-  management_group_id = azurerm_management_group.prod.id
+  management_group_id = azurerm_management_group.management.id
   subscription_id     = "/subscriptions/ff45ede4-ddf8-4818-9ab0-486b2d42d71e"
 }
