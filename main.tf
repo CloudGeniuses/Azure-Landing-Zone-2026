@@ -88,6 +88,12 @@ resource "azurerm_management_group" "nonprod" {
   parent_management_group_id = azurerm_management_group.corp.id
 }
 
+resource "azurerm_management_group" "soc_platform" {
+  name                       = "adiryx-soc-platform"
+  display_name               = "Adiryx-SOC-Platform"
+  parent_management_group_id = azurerm_management_group.nonprod.id
+}
+
 #################################################
 # OTHER TOP LEVEL GROUPS
 #################################################
@@ -109,7 +115,7 @@ resource "azurerm_management_group" "decommissioned" {
 #################################################
 
 resource "azurerm_management_group_subscription_association" "adiryx_soc_platform" {
-  management_group_id = azurerm_management_group.nonprod.id
+  management_group_id = azurerm_management_group.soc_platform.id
   subscription_id     = local.subscription_id
 
   depends_on = [
@@ -122,6 +128,7 @@ resource "azurerm_management_group_subscription_association" "adiryx_soc_platfor
     azurerm_management_group.online,
     azurerm_management_group.prod,
     azurerm_management_group.nonprod,
+    azurerm_management_group.soc_platform,
     azurerm_management_group.sandbox,
     azurerm_management_group.decommissioned
   ]
