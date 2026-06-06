@@ -17,114 +17,109 @@ locals {
   subscription_id = "/subscriptions/ff45ede4-ddf8-4818-9ab0-486b2d42d71e"
 }
 
+#################################################
+# ROOT
+#################################################
+
 resource "azurerm_management_group" "adiryx" {
   name         = "adiryx"
   display_name = "Adiryx"
 }
 
+#################################################
+# LEVEL 1 UNDER ADIRYX
+#################################################
+
 resource "azurerm_management_group" "platform" {
   name                       = "adiryx-platform"
   display_name               = "Adiryx Platform"
   parent_management_group_id = azurerm_management_group.adiryx.id
-
-  depends_on = [azurerm_management_group.adiryx]
 }
 
 resource "azurerm_management_group" "landingzones" {
   name                       = "adiryx-landingzones"
   display_name               = "Adiryx Landing Zones"
   parent_management_group_id = azurerm_management_group.adiryx.id
-
-  depends_on = [azurerm_management_group.adiryx]
 }
 
 resource "azurerm_management_group" "sandbox" {
   name                       = "adiryx-sandbox"
   display_name               = "Adiryx Sandbox"
   parent_management_group_id = azurerm_management_group.adiryx.id
-
-  depends_on = [azurerm_management_group.adiryx]
 }
 
 resource "azurerm_management_group" "decommissioned" {
   name                       = "adiryx-decommissioned"
   display_name               = "Adiryx Decommissioned"
   parent_management_group_id = azurerm_management_group.adiryx.id
-
-  depends_on = [azurerm_management_group.adiryx]
 }
+
+#################################################
+# PLATFORM CHILDREN
+#################################################
 
 resource "azurerm_management_group" "identity" {
   name                       = "adiryx-identity"
   display_name               = "Adiryx Identity"
   parent_management_group_id = azurerm_management_group.platform.id
-
-  depends_on = [azurerm_management_group.platform]
 }
 
 resource "azurerm_management_group" "connectivity" {
   name                       = "adiryx-connectivity"
   display_name               = "Adiryx Connectivity"
   parent_management_group_id = azurerm_management_group.platform.id
-
-  depends_on = [azurerm_management_group.platform]
 }
 
 resource "azurerm_management_group" "management" {
   name                       = "adiryx-management"
   display_name               = "Adiryx Management"
   parent_management_group_id = azurerm_management_group.platform.id
-
-  depends_on = [azurerm_management_group.platform]
 }
+
+#################################################
+# LANDING ZONE CHILDREN
+#################################################
 
 resource "azurerm_management_group" "corp" {
   name                       = "adiryx-corp"
   display_name               = "Adiryx Corp"
   parent_management_group_id = azurerm_management_group.landingzones.id
-
-  depends_on = [azurerm_management_group.landingzones]
 }
 
 resource "azurerm_management_group" "online" {
   name                       = "adiryx-online"
   display_name               = "Adiryx Online"
   parent_management_group_id = azurerm_management_group.landingzones.id
-
-  depends_on = [azurerm_management_group.landingzones]
 }
 
-resource "azurerm_management_group" "prod" {
-  name                       = "adiryx-prod"
+#################################################
+# CORP CHILDREN
+#################################################
+
+resource "azurerm_management_group" "production" {
+  name                       = "adiryx-production"
   display_name               = "Adiryx Production"
   parent_management_group_id = azurerm_management_group.corp.id
-
-  depends_on = [azurerm_management_group.corp]
 }
 
-resource "azurerm_management_group" "nonprod" {
-  name                       = "adiryx-nonprod"
+resource "azurerm_management_group" "nonproduction" {
+  name                       = "adiryx-non-production"
   display_name               = "Adiryx Non-Production"
   parent_management_group_id = azurerm_management_group.corp.id
-
-  depends_on = [azurerm_management_group.corp]
 }
+
+#################################################
+# SUBSCRIPTION PLACEMENT
+#################################################
 
 resource "azurerm_management_group_subscription_association" "adiryx_soc_platform" {
-  management_group_id = azurerm_management_group.nonprod.id
+  management_group_id = azurerm_management_group.nonproduction.id
   subscription_id     = local.subscription_id
-
-  depends_on = [
-    azurerm_management_group.prod,
-    azurerm_management_group.nonprod,
-    azurerm_management_group.online,
-    azurerm_management_group.identity,
-    azurerm_management_group.connectivity,
-    azurerm_management_group.management,
-    azurerm_management_group.sandbox,
-    azurerm_management_group.decommissioned
-  ]
 }
+
+#################################################
+# OUTPUT
+#################################################
 
 output "expected_management_group_structure" {
   value = {
@@ -136,8 +131,8 @@ output "expected_management_group_structure" {
     management        = azurerm_management_group.management.display_name
     landing_zones     = azurerm_management_group.landingzones.display_name
     corp              = azurerm_management_group.corp.display_name
-    production        = azurerm_management_group.prod.display_name
-    non_production    = azurerm_management_group.nonprod.display_name
+    production        = azurerm_management_group.production.display_name
+    non_production    = azurerm_management_group.nonproduction.display_name
     online            = azurerm_management_group.online.display_name
     sandbox           = azurerm_management_group.sandbox.display_name
     decommissioned    = azurerm_management_group.decommissioned.display_name
