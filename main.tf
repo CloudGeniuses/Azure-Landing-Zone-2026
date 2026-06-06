@@ -17,46 +17,16 @@ locals {
   subscription_id = "/subscriptions/ff45ede4-ddf8-4818-9ab0-486b2d42d71e"
 }
 
-#################################################
-# ROOT
-#################################################
-
 resource "azurerm_management_group" "adiryx" {
   name         = "adiryx"
   display_name = "Adiryx"
 }
-
-#################################################
-# LEVEL 1 UNDER ADIRYX
-#################################################
 
 resource "azurerm_management_group" "platform" {
   name                       = "adiryx-platform"
   display_name               = "Adiryx Platform"
   parent_management_group_id = azurerm_management_group.adiryx.id
 }
-
-resource "azurerm_management_group" "landingzones" {
-  name                       = "adiryx-landingzones"
-  display_name               = "Adiryx Landing Zones"
-  parent_management_group_id = azurerm_management_group.adiryx.id
-}
-
-resource "azurerm_management_group" "sandbox" {
-  name                       = "adiryx-sandbox"
-  display_name               = "Adiryx Sandbox"
-  parent_management_group_id = azurerm_management_group.adiryx.id
-}
-
-resource "azurerm_management_group" "decommissioned" {
-  name                       = "adiryx-decommissioned"
-  display_name               = "Adiryx Decommissioned"
-  parent_management_group_id = azurerm_management_group.adiryx.id
-}
-
-#################################################
-# PLATFORM CHILDREN
-#################################################
 
 resource "azurerm_management_group" "identity" {
   name                       = "adiryx-identity"
@@ -76,25 +46,17 @@ resource "azurerm_management_group" "management" {
   parent_management_group_id = azurerm_management_group.platform.id
 }
 
-#################################################
-# LANDING ZONE CHILDREN
-#################################################
+resource "azurerm_management_group" "landingzones" {
+  name                       = "adiryx-landingzones"
+  display_name               = "Adiryx Landing Zones"
+  parent_management_group_id = azurerm_management_group.adiryx.id
+}
 
 resource "azurerm_management_group" "corp" {
   name                       = "adiryx-corp"
   display_name               = "Adiryx Corp"
   parent_management_group_id = azurerm_management_group.landingzones.id
 }
-
-resource "azurerm_management_group" "online" {
-  name                       = "adiryx-online"
-  display_name               = "Adiryx Online"
-  parent_management_group_id = azurerm_management_group.landingzones.id
-}
-
-#################################################
-# CORP CHILDREN
-#################################################
 
 resource "azurerm_management_group" "production" {
   name                       = "adiryx-production"
@@ -108,18 +70,28 @@ resource "azurerm_management_group" "nonproduction" {
   parent_management_group_id = azurerm_management_group.corp.id
 }
 
-#################################################
-# SUBSCRIPTION PLACEMENT
-#################################################
+resource "azurerm_management_group" "online" {
+  name                       = "adiryx-online"
+  display_name               = "Adiryx Online"
+  parent_management_group_id = azurerm_management_group.landingzones.id
+}
+
+resource "azurerm_management_group" "sandbox" {
+  name                       = "adiryx-sandbox"
+  display_name               = "Adiryx Sandbox"
+  parent_management_group_id = azurerm_management_group.adiryx.id
+}
+
+resource "azurerm_management_group" "decommissioned" {
+  name                       = "adiryx-decommissioned"
+  display_name               = "Adiryx Decommissioned"
+  parent_management_group_id = azurerm_management_group.adiryx.id
+}
 
 resource "azurerm_management_group_subscription_association" "adiryx_soc_platform" {
   management_group_id = azurerm_management_group.nonproduction.id
   subscription_id     = local.subscription_id
 }
-
-#################################################
-# OUTPUT
-#################################################
 
 output "expected_management_group_structure" {
   value = {
